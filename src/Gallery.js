@@ -242,7 +242,7 @@ export default class Gallery extends PureComponent {
             }
         }
 
-        console.log(imageUrl)
+        // console.log(imageUrl)
         return (
             <TransformableImage
               onViewTransformed={((transform) => {
@@ -288,7 +288,7 @@ export default class Gallery extends PureComponent {
         }
 
         const flatListProps = {...DEFAULT_FLAT_LIST_PROPS, ...this.props.flatListProps};
-        console.log(this.pageCount)
+        // console.log(this.pageCount)
         return (
             <ViewPager
               {...this.props}
