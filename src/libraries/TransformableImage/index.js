@@ -22,15 +22,17 @@ export default class TransformableImage extends PureComponent {
         onViewTransformed: PropTypes.func,
         imageComponent: PropTypes.func,
         resizeMode: PropTypes.string,
-        errorComponent: PropTypes.func
+        errorComponent: PropTypes.func,
+        enableZoom: PropTypes.bool,
     };
 
     static defaultProps = {
         enableTransform: true,
         enableScale: true,
         enableTranslate: true,
+        enableZoom: true,
         imageComponent: undefined,
-        resizeMode: 'contain'
+        resizeMode: 'contain',
     };
 
     constructor (props) {
@@ -142,8 +144,9 @@ export default class TransformableImage extends PureComponent {
 
     render () {
         const { imageDimensions, viewWidth, viewHeight, error, keyAccumulator, imageLoaded } = this.state;
-        const { style, image, imageComponent, resizeMode, enableTransform, enableScale, enableTranslate, onTransformGestureReleased, onViewTransformed } = this.props;
-
+        const { style, image, pageData, imageComponent, resizeMode, enableTransform, enableScale, enableTranslate, onTransformGestureReleased, onViewTransformed, enableZoom } = this.props;
+        // console.log('imageComponent: ', imageComponent)
+        // console.log('pageData: ', this.props.pageData)
         let maxScale = 1;
         let contentAspectRatio;
         let width, height; // imageDimensions
@@ -172,15 +175,15 @@ export default class TransformableImage extends PureComponent {
             capInsets: { left: 0.1, top: 0.1, right: 0.1, bottom: 0.1 }
         };
 
-        const content = imageComponent ? imageComponent(imageProps, imageDimensions) : <Image { ...imageProps } />;
-
+        const content = imageComponent ? imageComponent(imageProps, imageDimensions, pageData) : <Image { ...imageProps } />;
+        // console.log('content: ', content)
         return (
             <ViewTransformer
               ref={'viewTransformer'}
               key={'viewTransformer#' + keyAccumulator} // when image source changes, we should use a different node to avoid reusing previous transform state
-              enableTransform={enableTransform && imageLoaded} // disable transform until image is loaded
-              enableScale={enableScale}
-              enableTranslate={enableTranslate}
+              enableTransform={enableTransform && imageLoaded && enableZoom} // disable transform until image is loaded
+              enableScale={enableScale && enableZoom}
+              enableTranslate={enableTranslate && enableZoom}
               enableResistance={true}
               onTransformGestureReleased={onTransformGestureReleased}
               onViewTransformed={onViewTransformed}

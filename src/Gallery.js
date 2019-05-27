@@ -1,12 +1,19 @@
 import React, { PureComponent } from 'react';
-import { View, ViewPropTypes } from 'react-native';
+import { View, ViewPropTypes, Dimensions } from 'react-native';
 import PropTypes from 'prop-types';
 import { createResponder } from './libraries/GestureResponder';
 import TransformableImage from './libraries/TransformableImage';
 import ViewPager from './libraries/ViewPager';
 
 const DEFAULT_FLAT_LIST_PROPS = {
-    windowSize: 3
+    windowSize: 3, // limits memory usage to 3 screens full of photos (ie. 3 photos)
+    initialNumToRender: 3, // limit amount, must also be limited, is not controlled by other props
+    maxToRenderPerBatch: 2, // when rendering ahead, how many should we render at the same time
+    getItemLayout: (data, index) => ({ // fixes scroll and pinch behavior
+      length: Dimensions.get('screen').width,
+      offset: Dimensions.get('screen').width * index,
+      index,
+    }),
 };
 
 export default class Gallery extends PureComponent {
@@ -25,13 +32,15 @@ export default class Gallery extends PureComponent {
         removeClippedSubviews: PropTypes.bool,
         imageComponent: PropTypes.func,
         errorComponent: PropTypes.func,
-        flatListProps: PropTypes.object
+        flatListProps: PropTypes.object,
+        enableZoom: PropTypes.bool,
     };
 
     static defaultProps = {
         removeClippedSubviews: true,
         imageComponent: undefined,
         scrollViewStyle: {},
+        enableZoom: true,
         flatListProps: DEFAULT_FLAT_LIST_PROPS
     };
 
@@ -226,6 +235,14 @@ export default class Gallery extends PureComponent {
 
     renderPage (pageData, pageId) {
         const { onViewTransformed, onTransformGestureReleased, errorComponent, imageComponent } = this.props;
+        // console.log('pageData: ', pageData)
+        const imageUrl = {
+            source: {
+                uri: pageData.previewUrl
+            }
+        }
+
+        console.log(imageUrl)
         return (
             <TransformableImage
               onViewTransformed={((transform) => {
@@ -239,7 +256,8 @@ export default class Gallery extends PureComponent {
               key={'innerImage#' + pageId}
               errorComponent={errorComponent}
               imageComponent={imageComponent}
-              image={pageData}
+              image={imageUrl}
+              pageData={pageData}
             />
         );
     }
@@ -270,7 +288,7 @@ export default class Gallery extends PureComponent {
         }
 
         const flatListProps = {...DEFAULT_FLAT_LIST_PROPS, ...this.props.flatListProps};
-
+        console.log(this.pageCount)
         return (
             <ViewPager
               {...this.props}
